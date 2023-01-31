@@ -43,6 +43,6 @@ class CommercetoolsController extends Controller
   
 
         // Output the Project name
-        return $findProductByKey();
+        return "Hello";
     }
 }
