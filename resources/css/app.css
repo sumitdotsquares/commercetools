@@ -497,3 +497,7 @@ html {
 .form-control {
     color: #425466;
 }
+
+.cart_count {
+    display: inline;
+}

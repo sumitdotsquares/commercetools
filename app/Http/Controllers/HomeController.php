@@ -9,7 +9,16 @@ class HomeController extends Controller
     public function index()
     {
         $ct = new CT();
-        echo $ct->getProducts();
-        return view( 'pages.home' );
+        $output['products'] = $ct->getProducts();
+        return view('pages.home', $output);
+    }
+
+    public function addTocart($product_id = null)
+    {
+        if ($product_id != null) {
+            $ct = new CT();
+            $ct->addToCart($product_id);
+        }
+        return redirect()->route('shop');
     }
 }

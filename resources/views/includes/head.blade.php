@@ -1,6 +1,6 @@
 <meta charset="utf-8">
 
-<link rel="icon" href="/ct-test/favicon.ico">
+<link rel="icon" type="image/x-icon" href="{{ asset('images/favicon.svg') }}" />
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#000000">
 <link rel="manifest" href="/ct-test/manifest.json">
