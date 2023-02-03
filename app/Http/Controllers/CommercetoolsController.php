@@ -11,46 +11,27 @@ use Commercetools\Api\Models\Cart\CartDraftBuilder;
 use Commercetools\Client\ClientCredentials;
 use Commercetools\Client\ClientFactory;
 use GuzzleHttp\ClientInterface;
+use Illuminate\Contracts\Routing\UrlGenerator;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\URL;
+use Illuminate\Routing\UrlGenerato;
 
 class CommercetoolsController extends Controller
 {
-    public  $apiRoot;
+    public  $url;
     public  $client;
-    public $projectKey;
     public function __construct()
     {
-        $this->projectKey = config('commercetools.projectKey');
-        /** @var string $clientId */
-        /** @var string $clientSecret */
-        $authConfig = new ClientCredentialsConfig(
-            new ClientCredentials(config('commercetools.clientID'), config('commercetools.secret')),
-            [],
-            'https://auth.' . config('commercetools.region') . '.commercetools.com/oauth/token'
-        );
-
-        $this->client = ClientFactory::of()->createGuzzleClient(
-            new Config([], 'https://api.' . config('commercetools.region') . '.commercetools.com'),
-            $authConfig
-        );
-
-        /** @var ClientInterface $client */
-        $builder = new ApiRequestBuilder($this->client);
-
-        // Include the Project key with the returned Client
-        $this->apiRoot = $builder->withProjectKey($this->projectKey);
+        $this->url = url('/api');
+        $this->client = new \GuzzleHttp\Client();
     }
 
     public function getProducts()
-    {
+    {dd('sd');
         $products = [];
-        // Query a Product by its Key
-        $findProductByKey = $this->apiRoot
-            ->products()
-            ->get()
-            ->execute()->getResults();
-
-        foreach ($findProductByKey as $key => $value) {
+        $result = $this->client->request('GET', $this->url . '/products');
+        
+        foreach ($result as $key => $value) {
             $products[] = $this->getProductByKey($value);
         }
         return $products;
@@ -81,13 +62,13 @@ class CommercetoolsController extends Controller
 
     public function addItem($cart_id, $product_id)
     {
-        if($product_id == null){
+        if ($product_id == null) {
             return;
         }
         $product = (new ResourceByProjectKeyProductsByID(["projectKey" => $this->projectKey, "ID" =>   $product_id], $this->client))->get()->execute();
         $procuct_version = $product->getVersion();
         $procuct_variant = $product->getMasterData()->getCurrent()->getMasterVariant()->getID();
-        
+
 
         dump($product);
         dump($cart_id);

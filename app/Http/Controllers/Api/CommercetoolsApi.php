@@ -3,27 +3,16 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
-use App\Models\Comment;
 use Commercetools\Api\Client\ApiRequestBuilder;
 use Commercetools\Api\Client\ClientCredentialsConfig;
 use Commercetools\Api\Client\Config;
-use Commercetools\Api\Client\Resource\ResourceByProjectKeyCartsByID;
-use Commercetools\Api\Client\Resource\ResourceByProjectKeyProductsByID;
 use Commercetools\Api\Models\Cart\CartDraftBuilder;
-use Commercetools\Api\Models\Cart\CartUpdate;
-use Commercetools\Api\Models\Cart\CartUpdateActionBuilder;
-use Commercetools\Api\Models\Cart\CartUpdateActionCollection;
-use Commercetools\Api\Models\Cart\CartUpdateBuilder;
-use Commercetools\Api\Models\Cart\LineItemDraftBuilder;
 use Commercetools\Client\ClientCredentials;
 use Commercetools\Client\ClientFactory;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Session;
-use Psr\Http\Message\ResponseInterface;
-use GuzzleHttp\Exception\RequestException;
-use GuzzleHttp\Promise\Promise;
 
-class CommercetoolsController extends Controller
+
+class CommercetoolsApi extends Controller
 {
     public  $builder;
     public  $apiRoot;
@@ -111,43 +100,20 @@ class CommercetoolsController extends Controller
         return response()->json($query);
     }
 
-    /**
-     * body: {
-     *     version: version,
-     *     actions: [
-     *       {
-     *         action: "addLineItem",
-     *         productId: productId,
-     *         variantId: variantId
-     *       }
-     *     ],
-     * }
-     */
-    public function cartAddLineItem(Request $request)
+    public function itemAddToCart(Request $request)
     {
-        $data = $request->all();
-        $params = (new CartUpdateActionCollection([
-            "action" => "addLineItem",
-            "productId" => "4df38248-fb6e-4133-9f21-04ca5ce61bb7",
-            "variantId" => 1,
-            "quantity" => 1
-        ]));
-        dump($params);
-        $params = (new CartUpdateActionBuilder())
-            ->build();
-        dump($params);
-        $query = $this->apiRoot
-            ->carts()
-            ->withId('ecac2759-9a17-4be0-a432-1788ce832a03')
-
-            ->post();
-        // ->execute();
-        dd($query);
-
-
-
-
-        return response()->json($query);
+        $body = '{
+            "version": 1,
+            "actions": [
+              {
+                "action": "addLineItem",
+                "productId": "4df38248-fb6e-4133-9f21-04ca5ce61bb7",
+                "variantId": 1,
+                "quantity": 1
+              }
+            ]
+          }';
+        return $this->callCT('carts/ecac2759-9a17-4be0-a432-1788ce832a03', 'POST', $body);
     }
 
 
