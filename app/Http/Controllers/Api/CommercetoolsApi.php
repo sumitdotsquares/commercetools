@@ -90,14 +90,14 @@ class CommercetoolsApi extends Controller
 
     public function createCart()
     {
-        $newCartDetails = (new CartDraftBuilder("EUR"))->withCurrency('EUR')->build();
+        dd('sdfsd');
+        $body = '{
+            "currency": "EUR",
+            "shipping": [],
+            "customShipping": []
+          }';
 
-        $query = $this->apiRoot
-            ->carts()
-            ->post($newCartDetails)
-            ->execute();
-
-        return response()->json($query);
+        return $this->callCT('carts', 'POST', $body);
     }
 
     public function itemAddToCart(Request $request)

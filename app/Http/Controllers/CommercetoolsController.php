@@ -15,6 +15,7 @@ use Illuminate\Contracts\Routing\UrlGenerator;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Routing\UrlGenerato;
+use Illuminate\Support\Facades\Http;
 
 class CommercetoolsController extends Controller
 {
@@ -23,17 +24,18 @@ class CommercetoolsController extends Controller
     public function __construct()
     {
         $this->url = url('/api');
-        $this->client = new \GuzzleHttp\Client();
+        $this->client = new \GuzzleHttp\Client(['base_uri' => url('/api')]);
     }
 
     public function getProducts()
-    {dd('sd');
+    {
         $products = [];
-        $result = $this->client->request('GET', $this->url . '/products');
-        
-        foreach ($result as $key => $value) {
+        $result = $this->client->get('https://commercetools.24livehost.com/api/products');
+
+        foreach (json_decode($result->getBody())->results as $key => $value) {
             $products[] = $this->getProductByKey($value);
         }
+
         return $products;
     }
 
@@ -44,10 +46,10 @@ class CommercetoolsController extends Controller
             return;
         }
 
-        $procuct['id'] = $findProductByKey->getId();
-        $procuct['name'] = $findProductByKey->getMasterData()->getCurrent()->getName()[config('commercetools.lang')];
-        $procuct['image'] = $findProductByKey->getMasterData()->getCurrent()->getMasterVariant()->getImages()[0]->getUrl();
-        $procuct['price'] = $findProductByKey->getMasterData()->getCurrent()->getMasterVariant()->getprices()[0]->getValue();
+        $procuct['id'] = $findProductByKey->id;
+        $procuct['name'] = $findProductByKey->masterData->current->name->en;
+        $procuct['image'] = $findProductByKey->masterData->current->masterVariant->images[0]->url;
+        $procuct['price'] = $findProductByKey->masterData->current->masterVariant->prices[0]->value;
         return $procuct;
     }
 
@@ -79,6 +81,9 @@ class CommercetoolsController extends Controller
     public function createCart()
     {
         $newCartDetails = (new CartDraftBuilder("EUR"))->withCurrency('EUR')->build();
+        $result = $this->client->get('https://commercetools.24livehost.com/api/products');
+
+        
         $cart = $this->apiRoot->carts()->post($newCartDetails)->execute();
         Session::put('cart_id', $cart->getId());
         return $cart->getId();

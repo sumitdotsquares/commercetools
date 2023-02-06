@@ -26,4 +26,4 @@ Route::post('/customer', [CommercetoolsApi::class, 'getCustomerByEmail'])->name(
 Route::get('/carts', [CommercetoolsApi::class, 'getCarts'])->name('getCarts');  
 Route::get('/carts/{cart-id}', [CommercetoolsApi::class, 'getCartsId'])->name('getCartsId');  
 Route::post('/carts/{cart-id}', [CommercetoolsApi::class, 'itemAddToCart'])->name('itemAddToCart');  
-Route::get('/cart', [CommercetoolsApi::class, 'createCart'])->name('createCart');
+Route::post('/carts', [CommercetoolsApi::class, 'createCart'])->name('createCart');

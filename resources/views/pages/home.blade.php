@@ -7,7 +7,7 @@
       <img alt="product" src="{{$product['image']}}" class="w-100" style="max-height: 150px; object-fit: contain; margin-left: auto; margin-right: auto; border-radius: 5px 5px 0px 0px;">
          <div class="card-body" style="padding-bottom: 0px;">
             <h5 style="font-size: 1.1em; font-weight: 500;">{{$product['name']}}</h5>
-            <p>{{config('commercetools.currencySymbol')}} {{$product['price']->getCentAmount()/100}}</p>
+            <p>{{config('commercetools.currencySymbol')}} {{$product['price']->centAmount/100}}</p>
             <a href="/add-to-cart/{{$product['id']}}" class="btn">Add to Cart</a>
          </div>
       </div>
