@@ -1,40 +1,11 @@
 @extends('layouts.default')
 @section('content')
 <div class="row">
-   <div class="col-12"><span data-super-title="data-super-title"> Pay by bank app and get 5% off </span>
-      <div data-super-banner="data-super-banner" style="font-family: &quot;Lucida Sans&quot;, &quot;Lucida Sans Regular&quot;, &quot;Lucida Grande&quot;, &quot;Lucida Sans Unicode&quot;, Geneva, Verdana, sans-serif;"> <span>Pay with</span> <img src="https://cdn.superpayments.com/payments/super-wordmark-sm-white.svg" alt="Super Logo" style="transform: translateY(0.15rem);"> <span> and get an additional 5% off</span> </div>
-      <div data-super-description="data-super-description" style="font-size: 1rem; display: flex; flex-direction: column; gap: 1.2rem; background-color: rgb(255, 255, 255); color: rgb(30, 43, 41); border-radius: 10px; padding: 20px 13px; font-family: &quot;Lucida Sans&quot;, &quot;Lucida Sans Regular&quot;, &quot;Lucida Grande&quot;, &quot;Lucida Sans Unicode&quot;, Geneva, Verdana, sans-serif; line-height: 1.2rem; overflow: clip;">
-         <div style="display: flex; gap: 0.8rem;">
-            <div style="margin-top: 0.2rem; height: 1rem; min-width: 1rem;"> <svg viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M12.3337 1L5.00033 8.33333L1.66699 5" stroke="#F54900" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
-               </svg> </div>
-            <div> <strong>Save:</strong> paying with your bank app saves DJ GREAVES LTD money, so they're giving you <strong>5% off</strong> the price. </div>
-         </div>
-         <div style="display: flex; gap: 0.8rem;">
-            <div style="margin-top: 0.2rem; height: 1rem; min-width: 1rem;"> <svg viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M12.3337 1L5.00033 8.33333L1.66699 5" stroke="#F54900" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
-               </svg> </div>
-            <div> <strong>Fast:</strong> confirm via your bank app in just seconds - no card required. </div>
-         </div>
-         <div style="display: flex; gap: 0.8rem;">
-            <div style="margin-top: 0.2rem; height: 1rem; min-width: 1rem;"> <svg viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M12.3337 1L5.00033 8.33333L1.66699 5" stroke="#F54900" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
-               </svg> </div>
-            <div> <strong>Safe:</strong> simply confirm this payment with Face ID or fingerprint verification. </div>
-         </div>
-         <div style="width: 100%; display: flex; gap: 0.8rem;">
-            <div style="min-width: 1rem;"></div> <img src="https://cdn.superpayments.com/payments/widget_bank_types_no_text@3x.svg" alt="Monzo, HSBC, Santander, Barclays, NatWest, Halifax, Lloyds" style="width: 87%; max-width: 27rem; height: auto;">
-         </div>
-         <div style="width: 100%; display: flex; gap: 0.8rem;">
-            <div style="min-width: 1rem;"></div>
-            <div>+ many more major banks</div>
-         </div>
-      </div>
-   </div>
+   <?php getSuperPayOffer(); ?>
    <div class="col-6">
       <h4 style="margin-bottom: 15px;">Your Cart</h4>
       <div style="border: 1px solid silver; border-radius: 4px; padding: 20px 20px 0px; box-shadow: silver 0px 0px 6px 0px;">
-         @foreach ($cart_items as $item)z
+         @foreach ($cart_items as $item)
          <div class="row" style="margin-bottom: 20px;">
             <div class="col-4"><img alt="shopping cart item" src="{{$item->variant->images[0]->url}}" style="height: 80px;"></div>
             <div class="col-4">{{ $item->name->en }}</div>
