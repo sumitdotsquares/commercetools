@@ -3,8 +3,11 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
+use Exception;
 use GuzzleHttp\Client;
 use Illuminate\Http\Request;
+use Guzzle\Http\Exception\ClientErrorResponseException;
+use Illuminate\Support\Facades\Log;
 
 class CommercetoolsApi extends Controller
 {
@@ -48,31 +51,47 @@ class CommercetoolsApi extends Controller
 
     public function getCartsById($cart_id = null)
     {
-        return $this->callCT('carts/'.$cart_id);
+        return $this->callCT('carts/' . $cart_id);
     }
 
     public function itemAddToCart(Request $request)
     {
         $data = $request->all();
-        return response()->json($data);
 
-        dd('Hello');
-        $body = '{
-            "version": 1,
-            "actions": [
-              {
-                "action": "addLineItem",
-                "productId": "4df38248-fb6e-4133-9f21-04ca5ce61bb7",
-                "variantId": 1,
-                "quantity": 1
-              }
+        $body = [
+            "version" => (int) $data['version'],
+            "actions" => [
+                [
+                    "action" => "addLineItem",
+                    "productId" => $data['productId'],
+                    "variantId" => (int) $data['variantId'],
+                    "quantity" => (int) $data['quantity']
+                ]
             ]
-          }';
+        ];
 
-        dd($body);
-        dd($this->callCT('carts/7b58ef7e-c28d-4e62-b62e-d1a301275ea2', 'POST', $body));
+        $curl = curl_init();
 
-        return $this->callCT('carts');
+        curl_setopt_array($curl, array(
+            CURLOPT_URL => 'https://api.us-central1.gcp.commercetools.com/super-payments/carts/' . $data['cart_id'],
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => '',
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 0,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => 'POST',
+            CURLOPT_POSTFIELDS => json_encode($body),
+            CURLOPT_HTTPHEADER => array(
+                'Content-Type: application/json',
+                'Authorization: Bearer ' . $this->accessToken
+            ),
+        ));
+
+        $response = curl_exec($curl);
+
+        curl_close($curl);
+        return $response;
     }
 
     public function createCart()
@@ -87,6 +106,7 @@ class CommercetoolsApi extends Controller
 
     public function callCT($uri = null, $method = 'GET', $body = null)
     {
+
         if ($uri == null) {
             return;
         }
@@ -96,10 +116,15 @@ class CommercetoolsApi extends Controller
         ];
 
         $apiURL = 'https://api.' . config('commercetools.region') . '.commercetools.com/' . $this->projectKey . '/' . $uri;
+        try {
+            $request = new \GuzzleHttp\Psr7\Request($method, $apiURL, $headers, $body);
+            $res = $this->client->sendAsync($request)->wait();
+        } catch (\GuzzleHttp\Exception\RequestException $e) {
 
-        $request = new \GuzzleHttp\Psr7\Request($method, $apiURL, $headers, $body);
-        $res = $this->client->sendAsync($request)->wait();
-
+            if ($e->hasResponse()) {
+                $res = $e->getResponse();
+            }
+        }
         return json_decode($res->getBody());
     }
 }

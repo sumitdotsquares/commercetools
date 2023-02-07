@@ -50,6 +50,25 @@ class CommercetoolsController extends Controller
         return json_decode($result->getBody());
     }
 
+    public function getCarts()
+    {
+        $cart_id = Session::get('ct_cart')->id;
+        $request = new \GuzzleHttp\Psr7\Request('GET', url('/api') . '/carts' . '/' . $cart_id);
+        $result = $this->client->sendAsync($request)->wait();
+        return json_decode($result->getBody());
+    }
+
+    public function getCartsById($cart_id = null)
+    {
+        if ($cart_id == null) {
+            return;
+        }
+
+        $request = new \GuzzleHttp\Psr7\Request('GET', url('/api') . '/carts' . '/' . $cart_id);
+        $result = $this->client->sendAsync($request)->wait();
+        return json_decode($result->getBody());
+    }
+
     public function getProductByKey($findProductByKey = null)
     {
         $procuct = [];
@@ -75,27 +94,21 @@ class CommercetoolsController extends Controller
             Session::save();
         }
         $product = $this->getProductsById($product_id);
-        
-        $body = '[
+        $cart = $this->getCartsById($cart->id);
+
+        $body = [
             "cart_id" => $cart->id,
             "version" => $cart->version,
-            "actions" => [
-                [
-                    "action" => "addLineItem",
-                    "productId" => $product_id,
-                    "variantId" => 1,
-                    "quantity" => 1
-                ]
-            ]
-        ]';
+            "action" => "addLineItem",
+            "productId" => $product_id,
+            "variantId" => $product->lastVariantId,
+            "quantity" => 1
+        ];
 
-        $request = new \GuzzleHttp\Psr7\Request('POST', url('/api') . '/add-to-cart', [], json_encode($body));
-        $result = $this->client->sendAsync($request)->wait();
+        $request = new \GuzzleHttp\Psr7\Request('POST', url('/api') . '/add-to-cart');
+        $result = $this->client->sendAsync($request, ['form_params' => $body])->wait();
         $result = json_decode($result->getBody());
-        dd($result);
-
-
-        dd($cart);
+     
         return $result;
     }
 }
