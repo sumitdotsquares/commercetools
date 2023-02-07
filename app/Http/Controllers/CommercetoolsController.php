@@ -29,11 +29,16 @@ class CommercetoolsController extends Controller
 
     public function getProducts()
     {
-        $products = [];
-        $result = $this->client->get(url('/api') . '/products');
+        $products = Session::get('ct_products');
+        if ($products == null) {
+            $products = [];
+            $result = $this->client->get(url('/api') . '/products');
 
-        foreach (json_decode($result->getBody())->results as $key => $value) {
-            $products[] = $this->getProductByKey($value);
+            foreach (json_decode($result->getBody())->results as $key => $value) {
+                $products[] = $this->getProductByKey($value);
+            }
+
+            Session::put('ct_products', $products);
         }
 
         return $products;
@@ -108,7 +113,9 @@ class CommercetoolsController extends Controller
         $request = new \GuzzleHttp\Psr7\Request('POST', url('/api') . '/add-to-cart');
         $result = $this->client->sendAsync($request, ['form_params' => $body])->wait();
         $result = json_decode($result->getBody());
-     
+        $cart = $this->getCartsById($cart->id);
+        Session::put('ct_cart', $cart);
+
         return $result;
     }
 }

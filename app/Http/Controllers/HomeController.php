@@ -10,7 +10,7 @@ class HomeController extends Controller
     {
         $ct = new CT();
         $output['products'] = $ct->getProducts();
-        $output['cart_item_count'] = sizeof($ct->getCarts()->lineItems);
+        $output['cart_item_count'] = getCartItemCount();
         return view('pages.home', $output);
     }
 
@@ -20,7 +20,14 @@ class HomeController extends Controller
             $ct = new CT();
             $ct->addToCart($product_id);
         }
-         
+
         return redirect()->route('shop');
+    }
+
+    public function checkout()
+    {
+        $output['cart_items'] = getCartItemsForCheckout();
+        $output['cart_item_count'] = getCartItemCount();
+        return view('pages.checkout', $output);
     }
 }

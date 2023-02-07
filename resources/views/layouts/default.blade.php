@@ -14,6 +14,10 @@
         
         @yield('content')
         
+
+        <div class="row" style="margin-top: 30px;">
+            @include('includes.footer')
+        </div>
     </div>
 
 
