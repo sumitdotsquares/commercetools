@@ -10,6 +10,7 @@ class HomeController extends Controller
     {
         $ct = new CT();
         $output['products'] = $ct->getProducts();
+        // $output['carts'] = $ct->getCarts();
         return view('pages.home', $output);
     }
 
@@ -19,6 +20,8 @@ class HomeController extends Controller
             $ct = new CT();
             $ct->addToCart($product_id);
         }
+
+        dd('HomeController');    
         return redirect()->route('shop');
     }
 }

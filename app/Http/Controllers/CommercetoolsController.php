@@ -24,19 +24,30 @@ class CommercetoolsController extends Controller
     public function __construct()
     {
         $this->url = url('/api');
-        $this->client = new \GuzzleHttp\Client(['base_uri' => url('/api')]);
+        $this->client = new \GuzzleHttp\Client();
     }
 
     public function getProducts()
     {
         $products = [];
-        $result = $this->client->get('https://commercetools.24livehost.com/api/products');
+        $result = $this->client->get(url('/api') . '/products');
 
         foreach (json_decode($result->getBody())->results as $key => $value) {
             $products[] = $this->getProductByKey($value);
         }
 
         return $products;
+    }
+
+    public function getProductsById($product_id = null)
+    {
+        if ($product_id == null) {
+            return;
+        }
+
+        $request = new \GuzzleHttp\Psr7\Request('GET', url('/api') . '/products' . '/' . $product_id);
+        $result = $this->client->sendAsync($request)->wait();
+        return json_decode($result->getBody());
     }
 
     public function getProductByKey($findProductByKey = null)
@@ -55,46 +66,36 @@ class CommercetoolsController extends Controller
 
     public function addToCart($product_id = null)
     {
-        $cart_id = Session::get('cart_id');
-        if ($cart_id == null) {
-            $cart_id = $this->createCart();
+        $cart = Session::get('ct_cart');
+        if ($cart == null) {
+            $request = new \GuzzleHttp\Psr7\Request('POST', url('/api') . '/carts');
+            $result = $this->client->sendAsync($request)->wait();
+            $cart = json_decode($result->getBody());
+            Session::put('ct_cart', json_decode($result->getBody()));
+            Session::save();
         }
-        $this->addItem($cart_id, $product_id);
-    }
-
-    public function addItem($cart_id, $product_id)
-    {
-        if ($product_id == null) {
-            return;
-        }
-        $product = (new ResourceByProjectKeyProductsByID(["projectKey" => $this->projectKey, "ID" =>   $product_id], $this->client))->get()->execute();
-        $procuct_version = $product->getVersion();
-        $procuct_variant = $product->getMasterData()->getCurrent()->getMasterVariant()->getID();
-
-
-        dump($product);
-        dump($cart_id);
-        dump($product_id);
-        dd("End");
-    }
-
-    public function createCart()
-    {
-        $newCartDetails = (new CartDraftBuilder("EUR"))->withCurrency('EUR')->build();
-        $result = $this->client->get('https://commercetools.24livehost.com/api/products');
-
+        $product = $this->getProductsById($product_id);
         
-        $cart = $this->apiRoot->carts()->post($newCartDetails)->execute();
-        Session::put('cart_id', $cart->getId());
-        return $cart->getId();
-    }
+        $body = '[
+            "cart_id" => $cart->id,
+            "version" => $cart->version,
+            "actions" => [
+                [
+                    "action" => "addLineItem",
+                    "productId" => $product_id,
+                    "variantId" => 1,
+                    "quantity" => 1
+                ]
+            ]
+        ]';
 
-    public function checkCart($cart_id = null)
-    {
-        if ($cart_id == null) {
-            return false;
-        }
-        $cart = new ResourceByProjectKeyCartsByID(["projectKey" => $this->projectKey, "ID" =>   $cart_id], $this->client);
-        return $cart->get()->execute();
+        $request = new \GuzzleHttp\Psr7\Request('POST', url('/api') . '/add-to-cart', [], json_encode($body));
+        $result = $this->client->sendAsync($request)->wait();
+        $result = json_decode($result->getBody());
+        dd($result);
+
+
+        dd($cart);
+        return $result;
     }
 }
