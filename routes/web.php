@@ -18,4 +18,4 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', [HomeController::class, 'index'])->name('shop');
 Route::get('/add-to-cart/{id}', [HomeController::class, 'addTocart'])->name('add-to-cart');   
 Route::get('/checkout', [HomeController::class, 'checkout'])->name('checkout');   
-Route::get('/check-customer', [CommercetoolsController::class, 'checkCustomer'])->name('checkCustomer');   
+Route::post('/customer', [CommercetoolsApi::class, 'getCustomerByEmail'])->name('getCustomerByEmail');  

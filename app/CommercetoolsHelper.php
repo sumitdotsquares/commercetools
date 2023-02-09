@@ -46,12 +46,34 @@ if (!function_exists('getCartItemCount')) {
 if (!function_exists('getSuperPayOffer')) {
     function getSuperPayOffer()
     {
-        return 'Hello';
+        $itemData = [
+            'minorUnitAmount' => 105,
+            'cart' => [
+                'id' => '5569854',
+                'items' => [
+                    [
+                        'name' => 'Test products',
+                        'quantity' => 1,
+                        'url' => 'https://m243extensions.projectstatus.in/test-products.html',
+                        'minorUnitAmount' => 100
+                    ]
+        
+                ]
+        
+            ],
+        
+            'page' => 'Checkout',
+            'output' => 'both',
+            'test' => true
+        ];
+        $url = 'https://api.staging.superpayments.com/v2/offers';
+        $getApikey = 'PSK_mXO-nafkIq1zhuoGcik41VExMi1QLgtxtUcQyJQl';
+        
         $curl = curl_init();
         curl_setopt_array($curl, array(
             CURLOPT_URL => $url,
             CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_USERAGENT => $this->getUserAgent(),
+            CURLOPT_USERAGENT => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36',
             CURLOPT_ENCODING => '',
             CURLOPT_MAXREDIRS => 10,
             CURLOPT_TIMEOUT => 0,
@@ -62,12 +84,14 @@ if (!function_exists('getSuperPayOffer')) {
             CURLOPT_HTTPHEADER => array(
                 'content: application/json',
                 'accept: application/json',
-                'checkout-api-key: ' . $this->getApikey(),
+                'checkout-api-key: ' . $getApikey,
                 'Content-Type: application/json'
             ),
         ));
         $response = curl_exec($curl);
         curl_close($curl);
-        return $response;
+        $response = json_decode($response);
+        echo $response->cashbackOfferId;
+        echo $response->content->description;
     }
 }

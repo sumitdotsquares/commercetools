@@ -64,21 +64,20 @@ class CommercetoolsController extends Controller
         return json_decode($result->getBody());
     }
 
-    public function checkCustomer(Request $request)
+    public function getCustomerByEmail(Request $request)
     {
-        $email = $request->email;
-        if($email == null){
-            return;
-        }
-        $body = [
-            'email' => $email
-        ];
-
+        $cart_id = Session::get('ct_cart')->id;
         $request = new \GuzzleHttp\Psr7\Request('POST', url('/api') . '/customer');
-        $result = $this->client->sendAsync($request, ['form_params' => $body])->wait();
-        $result = json_decode($result->getBody());
-        Session::put('ct_user', $result);
-        return $result;
+        $result = $this->client->sendAsync($request, ['form_params' => $request->all()])->wait();
+        return json_decode($result->getBody());
+
+        $customers = $this->callCT('customers');
+        foreach ($customers->results as $customer) {
+            if ($customer->email == $request->email) {
+                return $customer;
+            }
+        }
+        return response()->json(false);
     }
 
     public function getCartsById($cart_id = null)
