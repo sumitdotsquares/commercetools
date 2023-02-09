@@ -17,8 +17,10 @@ if (!function_exists('getCartItems')) {
     function getCartItemsForCheckout()
     {
         $cart = Session::get('ct_cart');
-        if ($cart) {
+        if ($cart != null) {
             return $cart->lineItems;
+        } else {
+            return false;
         }
     }
 }
@@ -44,64 +46,28 @@ if (!function_exists('getCartItemCount')) {
 if (!function_exists('getSuperPayOffer')) {
     function getSuperPayOffer()
     {
-        dump(getCart()->totalPrice->centAmount / 100);
-
-        $POSTFIELDS = [
-            "minorUnitAmount" => 10000,
-            "cart" => [
-                "id" => "cart101",
-                "items" => [
-                    [
-                        "name" => "Im a product",
-                        "quantity" => 2,
-                        "minorUnitAmount" => 10000,
-                        "url" => "https:\\/\\/www.dev-site-2x6137.wixdev-sites.org\\/product-page\\/i-m-a-product-8"
-                    ],
-                    [
-                        "name" => "Amazing boots",
-                        "quantity" => 3,
-                        "minorUnitAmount" => 10000,
-                        "url" => "https://www.merchant.com/product1.html"
-                    ]
-                ]
-            ],
-            "page" => "Checkout",
-            "output" => "both",
-            "test" => true
-        ];
-        $POSTFIELDS = json_encode($POSTFIELDS);
-        $client = new Client();
-        $headers = [
-            'Content-Type' => 'application/json',
-            'Referer' => 'https://www.staging.superpayments.com',
-            'checkout-api-key' => 'PSK_mXO-nafkIq1zhuoGcik41VExMi1QLgtxtUcQyJQl'
-        ];
-        $body = '{
-            "minorUnitAmount": 10000,
-            "cart": {
-                "id": "cart101",
-                "items": [
-                {
-                    "name": "Im a product",
-                    "quantity": 2,
-                    "minorUnitAmount": 10000,
-                    "url": "https://www.dev-site-2x6137.wixdev-sites.org/product-page/i-m-a-product-8"
-                },
-                {
-                    "name": "Amazing boots",
-                    "quantity": 3,
-                    "minorUnitAmount": 10000,
-                    "url": "https://www.merchant.com/product1.html"
-                }
-                ]
-            },
-            "page": "Checkout",
-            "output": "both",
-            "test": true
-        }';
-        $request = new Request('POST', 'https://api.staging.superpayments.com/v2/offers', $headers, $body);
-        $res = $client->sendAsync($request)->wait();
-      dd(json_encode($res->getBody()));
-        
+        return 'Hello';
+        $curl = curl_init();
+        curl_setopt_array($curl, array(
+            CURLOPT_URL => $url,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_USERAGENT => $this->getUserAgent(),
+            CURLOPT_ENCODING => '',
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 0,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => 'POST',
+            CURLOPT_POSTFIELDS => json_encode($itemData, true),
+            CURLOPT_HTTPHEADER => array(
+                'content: application/json',
+                'accept: application/json',
+                'checkout-api-key: ' . $this->getApikey(),
+                'Content-Type: application/json'
+            ),
+        ));
+        $response = curl_exec($curl);
+        curl_close($curl);
+        return $response;
     }
 }

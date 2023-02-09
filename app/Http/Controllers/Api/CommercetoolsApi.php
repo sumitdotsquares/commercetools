@@ -29,6 +29,17 @@ class CommercetoolsApi extends Controller
         $this->accessToken = json_decode($res->getBody())->access_token;
     }
 
+    public function getCustomerByEmail(Request $request)
+    {
+        $customers = $this->callCT('customers');
+        foreach ($customers->results as $customer) {
+            if ($customer->email == $request->email) {
+                return $customer;
+            }
+        }
+        return response()->json(false);
+    }
+
     public function getTest()
     {
         return response()->json(['Hello']);
@@ -104,6 +115,11 @@ class CommercetoolsApi extends Controller
         return $this->callCT('carts', 'POST', $body);
     }
 
+    public function getOffer()
+    {
+        return response()->json('Under devlopment');
+    }
+
     public function callCT($uri = null, $method = 'GET', $body = null)
     {
 
@@ -116,6 +132,7 @@ class CommercetoolsApi extends Controller
         ];
 
         $apiURL = 'https://api.' . config('commercetools.region') . '.commercetools.com/' . $this->projectKey . '/' . $uri;
+        // dd($body);
         try {
             $request = new \GuzzleHttp\Psr7\Request($method, $apiURL, $headers, $body);
             $res = $this->client->sendAsync($request)->wait();

@@ -26,7 +26,11 @@ class HomeController extends Controller
 
     public function checkout()
     {
+        
         $output['cart_items'] = getCartItemsForCheckout();
+        if(!$output['cart_items']){
+            return redirect()->route('shop');
+        }
         $output['cart_item_count'] = getCartItemCount();
         return view('pages.checkout', $output);
     }

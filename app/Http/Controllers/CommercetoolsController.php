@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Routing\UrlGenerato;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Http\Request;
 
 class CommercetoolsController extends Controller
 {
@@ -61,6 +62,23 @@ class CommercetoolsController extends Controller
         $request = new \GuzzleHttp\Psr7\Request('GET', url('/api') . '/carts' . '/' . $cart_id);
         $result = $this->client->sendAsync($request)->wait();
         return json_decode($result->getBody());
+    }
+
+    public function checkCustomer(Request $request)
+    {
+        $email = $request->email;
+        if($email == null){
+            return;
+        }
+        $body = [
+            'email' => $email
+        ];
+
+        $request = new \GuzzleHttp\Psr7\Request('POST', url('/api') . '/customer');
+        $result = $this->client->sendAsync($request, ['form_params' => $body])->wait();
+        $result = json_decode($result->getBody());
+        Session::put('ct_user', $result);
+        return $result;
     }
 
     public function getCartsById($cart_id = null)
