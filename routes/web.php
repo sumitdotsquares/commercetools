@@ -18,4 +18,7 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', [HomeController::class, 'index'])->name('shop');
 Route::get('/add-to-cart/{id}', [HomeController::class, 'addTocart'])->name('add-to-cart');   
 Route::get('/checkout', [HomeController::class, 'checkout'])->name('checkout');   
-Route::post('/customer', [CommercetoolsApi::class, 'getCustomerByEmail'])->name('getCustomerByEmail');  
+Route::post('/customer', [CommercetoolsController::class, 'getCustomerByEmail'])->name('getCustomerByEmail');  
+Route::any('/superpayments-success', [HomeController::class, 'superpaymentsSuccess'])->name('superpaymentsSuccess');  
+Route::any('/superpayments-cancel', [HomeController::class, 'superpaymentsSuccess'])->name('superpaymentsSuccess');  
+Route::any('/superpayments-fail', [HomeController::class, 'superpaymentsSuccess'])->name('superpaymentsSuccess');  

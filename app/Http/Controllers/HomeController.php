@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\CommercetoolsController as CT;
+use Illuminate\Support\Facades\Session;
 
 class HomeController extends Controller
 {
@@ -26,12 +27,23 @@ class HomeController extends Controller
 
     public function checkout()
     {
-        
         $output['cart_items'] = getCartItemsForCheckout();
-        if(!$output['cart_items']){
+        if (!$output['cart_items']) {
             return redirect()->route('shop');
         }
         $output['cart_item_count'] = getCartItemCount();
+        
+        $output['supar_pay_offer'] = getSuperPayOffer();
+        if (isset(Session::get('ct_customer')->id)){
+            $output['ct_customer'] =  Session::get('ct_customer');
+            $output['supar_pay_payment'] =  getSuperPayment();
+        }
+        
         return view('pages.checkout', $output);
+    }
+
+    public function superpaymentsSuccess()
+    {
+        dd('Need Work here');
     }
 }
