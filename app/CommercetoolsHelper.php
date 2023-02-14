@@ -60,7 +60,7 @@ if (!function_exists('getSuperPayOffer')) {
         }
 
         $itemData = [
-            'minorUnitAmount' => 120,
+            'minorUnitAmount' => $minorUnitAmount,
             'cart' => [
                 'id' => $cart->id,
                 'items' =>  $items
@@ -70,6 +70,7 @@ if (!function_exists('getSuperPayOffer')) {
             'output' => 'both',
             'test' => true
         ];
+        
 
         $url = config('commercetools.SUPAR_API_URL') . '/offers';
         $getApikey = config('commercetools.SUPAR_API_KEY');
@@ -131,16 +132,16 @@ if (!function_exists('getSuperPayment')) {
             CURLOPT_CUSTOMREQUEST => 'POST',
             CURLOPT_POSTFIELDS => '{
                 "cashbackOfferId": "' . $ct_suparpay_offer_id . '",
-                "successUrl": "https://commercetools.24livehost.com/superpayments-success",
-                "cancelUrl": "https://commercetools.24livehost.com/superpayments-cancel",
-                "failureUrl": "https://commercetools.24livehost.com/superpayments-fail",
+                "successUrl": "https://commercetools.24livehost.com/super-pay/success",
+                "cancelUrl": "https://commercetools.24livehost.com/super-pay/cancel",
+                "failureUrl": "https://commercetools.24livehost.com/super-pay/fail",
                 "minorUnitAmount": ' . $cart->totalPrice->centAmount . ',
                 "currency": "GBP",
                 "externalReference": "order_id_'.$cart->id.'"
                 }',
             CURLOPT_HTTPHEADER => array(
                 'Content-Type: application/json',
-                'Referer: https://www.staging.superpayments.com',
+                'Referer: https://commercetools.24livehost.com',
                 'checkout-api-key: '.$getApikey
             ),
         ));
@@ -154,7 +155,7 @@ if (!function_exists('getSuperPayment')) {
 }
 
 
-if (!function_exists('getSuperPayOffer')) {
+if (!function_exists('formatAmount')) {
     function formatAmount($dollars = 0)
     {
         echo '€ ' . sprintf('%0.2f', $dollars);

@@ -56,7 +56,7 @@
          </div>
          <div class="row mb-2 checkoutPane">
             <div class="col-12    mb-2">
-               <a class="form-control btn btn-primary" href="{{$redirectUrl}}" style="color: white; border: 0px;">Pay with Super Pay € {{$supar_pay_offer->calculation->amountAfterSavings}} now</a>
+               <a class="form-control btn btn-primary" href="{{$redirectUrl}}" style="color: white; border: 0px;">Pay with Super Pay € {{$supar_pay_offer->calculation->amountAfterSavings / 100 }} now</a>
 
             </div>
             <div class="col-12">

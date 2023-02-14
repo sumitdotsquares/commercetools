@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\CommercetoolsController as CT;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Http\Request;
 
 class HomeController extends Controller
 {
@@ -32,18 +34,20 @@ class HomeController extends Controller
             return redirect()->route('shop');
         }
         $output['cart_item_count'] = getCartItemCount();
-        
+
         $output['supar_pay_offer'] = getSuperPayOffer();
-        if (isset(Session::get('ct_customer')->id)){
+        if (isset(Session::get('ct_customer')->id)) {
             $output['ct_customer'] =  Session::get('ct_customer');
             $output['supar_pay_payment'] =  getSuperPayment();
         }
-        
         return view('pages.checkout', $output);
     }
 
-    public function superpaymentsSuccess()
+    public function superpaymentsSuccess(Request $request)
     {
-        dd('Need Work here');
+        $request_body = $request->all();
+        Log::debug('Sumit');
+        Log::debug(json_encode($request_body));
+        return response()->json([], 200);
     }
 }
