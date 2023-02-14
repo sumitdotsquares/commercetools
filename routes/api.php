@@ -32,3 +32,12 @@ Route::get('/carts/{id}', [CommercetoolsApi::class, 'getCartsById'])->name('getC
 Route::any('/add-to-cart', [CommercetoolsApi::class, 'itemAddToCart'])->name('itemAddToCart');
 Route::any('/get-offer', [CommercetoolsApi::class, 'getOffer'])->name('getOffer');
 
+
+
+
+Route::any('/super-pay/success', [CommercetoolsApi::class, 'superpaymentsSuccess']);  
+Route::any('/super-pay/cancel', [CommercetoolsApi::class, 'superpaymentsSuccess']);  
+Route::any('/super-pay/fail', [CommercetoolsApi::class, 'superpaymentsSuccess']);  
+Route::any('/super-pay/checkout', [CommercetoolsApi::class, 'superpaymentsSuccess']);  
+Route::any('/super-pay/refund', [CommercetoolsApi::class, 'superpaymentsSuccess']);  
+Route::any('/webhook', [CommercetoolsApi::class, 'superpaymentsSuccess']);  

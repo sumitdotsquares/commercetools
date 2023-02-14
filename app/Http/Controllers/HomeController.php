@@ -43,11 +43,17 @@ class HomeController extends Controller
         return view('pages.checkout', $output);
     }
 
+    public function resetSession()
+    {
+       Session::remove();
+    }
+
     public function superpaymentsSuccess(Request $request)
     {
+        // return response()->json(['sds']);
         $request_body = $request->all();
         Log::debug('Sumit');
         Log::debug(json_encode($request_body));
-        return response()->json([], 200);
+        return response()->json($request_body);
     }
 }

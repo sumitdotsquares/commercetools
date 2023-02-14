@@ -19,9 +19,11 @@ Route::get('/', [HomeController::class, 'index'])->name('shop');
 Route::get('/add-to-cart/{id}', [HomeController::class, 'addTocart'])->name('add-to-cart');   
 Route::get('/checkout', [HomeController::class, 'checkout'])->name('checkout');   
 Route::post('/customer', [CommercetoolsController::class, 'getCustomerByEmail'])->name('getCustomerByEmail');  
-Route::any('/super-pay/success', [HomeController::class, 'superpaymentsSuccess'])->name('superpaymentsSuccess');  
-Route::any('/super-pay/cancel', [HomeController::class, 'superpaymentsSuccess'])->name('superpaymentsSuccess');  
-Route::any('/super-pay/fail', [HomeController::class, 'superpaymentsSuccess'])->name('superpaymentsSuccess');  
-Route::any('/super-pay/checkout', [HomeController::class, 'superpaymentsSuccess'])->name('superpaymentsSuccess');  
-Route::any('/super-pay/refund', [HomeController::class, 'superpaymentsSuccess'])->name('superpaymentsSuccess');  
-Route::any('/webhook', [HomeController::class, 'superpaymentsSuccess'])->name('superpaymentsSuccess');  
+Route::any('/super-pay/success', [HomeController::class, 'superpaymentsSuccess']);  
+Route::any('/super-pay/cancel', [HomeController::class, 'superpaymentsSuccess']);  
+Route::any('/super-pay/fail', [HomeController::class, 'superpaymentsSuccess']);  
+Route::any('/super-pay/checkout', [HomeController::class, 'superpaymentsSuccess']);  
+Route::any('/super-pay/refund', [HomeController::class, 'superpaymentsSuccess']);  
+Route::any('/webhook', [HomeController::class, 'superpaymentsSuccess']);  
+
+Route::any('/reset-session', [HomeController::class, 'resetSession']);  

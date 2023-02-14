@@ -115,6 +115,11 @@ class CommercetoolsApi extends Controller
         return $this->callCT('carts', 'POST', $body);
     }
 
+    public function superpaymentsSuccess(Request $request)
+    {
+        return json_decode($request);
+    }
+
     public function getOffer()
     {
         return response()->json('Under devlopment');

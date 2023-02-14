@@ -70,7 +70,7 @@ if (!function_exists('getSuperPayOffer')) {
             'output' => 'both',
             'test' => true
         ];
-        
+
 
         $url = config('commercetools.SUPAR_API_URL') . '/offers';
         $getApikey = config('commercetools.SUPAR_API_KEY');
@@ -137,12 +137,12 @@ if (!function_exists('getSuperPayment')) {
                 "failureUrl": "https://commercetools.24livehost.com/super-pay/fail",
                 "minorUnitAmount": ' . $cart->totalPrice->centAmount . ',
                 "currency": "GBP",
-                "externalReference": "order_id_'.$cart->id.'"
+                "externalReference": "order_id_' . $cart->id . '"
                 }',
             CURLOPT_HTTPHEADER => array(
                 'Content-Type: application/json',
                 'Referer: https://commercetools.24livehost.com',
-                'checkout-api-key: '.$getApikey
+                'checkout-api-key: ' . $getApikey
             ),
         ));
 
