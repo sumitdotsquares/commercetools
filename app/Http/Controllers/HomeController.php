@@ -34,8 +34,9 @@ class HomeController extends Controller
             return redirect()->route('shop');
         }
         $output['cart_item_count'] = getCartItemCount();
-
         $output['supar_pay_offer'] = getSuperPayOffer();
+        
+        dump(Session::get('ct_suparpay_offer_id'));
         if (isset(Session::get('ct_customer')->id)) {
             $output['ct_customer'] =  Session::get('ct_customer');
             $output['supar_pay_payment'] =  getSuperPayment();
@@ -50,10 +51,12 @@ class HomeController extends Controller
 
     public function superpaymentsSuccess(Request $request)
     {
-        // return response()->json(['sds']);
         $request_body = $request->all();
-        Log::debug('Sumit');
+        Log::debug('Log start superpaymentsSuccess');
+        Log::debug('URL'.$request->fullUrl());
+        Log::debug($request_body);
         Log::debug(json_encode($request_body));
-        return response()->json($request_body);
+        Log::debug('Log end superpaymentsSuccess');
+        return response()->json([], 200);
     }
 }

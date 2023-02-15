@@ -50,7 +50,7 @@ if (!function_exists('getSuperPayOffer')) {
         $cart_items = $cart->lineItems;
         $items = [];
         for ($i = 0; $i < $cart->totalLineItemQuantity; $i++) {
-            $minorUnitAmount = (int) $cart_items[$i]->totalPrice->centAmount;
+            $minorUnitAmount = 1; //(int) $cart_items[$i]->totalPrice->centAmount;
             $items[] = [
                 'name' =>  $cart_items[$i]->name->en,
                 'quantity' =>  $cart_items[$i]->quantity,
@@ -109,6 +109,51 @@ if (!function_exists('getSuperPayOffer')) {
 }
 
 
+if (!function_exists('getSuperPaymentDetail')) {
+    function getSuperPaymentDetail()
+    {
+        $cart = Session::get('ct_cart');
+        $cart_items = $cart->lineItems;
+
+
+        $url = config('commercetools.SUPAR_API_URL') . '/payments/CK6C8FH4LL9STKCA0T';
+        $getApikey = config('commercetools.SUPAR_API_KEY');
+
+        $curl = curl_init();
+        curl_setopt_array($curl, array(
+            CURLOPT_URL => $url,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_USERAGENT => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36',
+            CURLOPT_ENCODING => '',
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 0,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => 'GET',
+            // CURLOPT_POSTFIELDS => json_encode($itemData, true),
+            CURLOPT_HTTPHEADER => array(
+                'content: application/json',
+                'accept: application/json',
+                'checkout-api-key: ' . $getApikey,
+                'Content-Type: application/json'
+            ),
+        ));
+        $response = curl_exec($curl);
+
+        if ($response === false) {
+            echo 'Curl error: ' . curl_error($curl);
+        } else {
+            $response = json_decode($response);
+            dd($response);
+            // Session::put('ct_suparpay_offer_id', $response->cashbackOfferId);
+            return $response;
+        }
+
+        curl_close($curl);
+    }
+}
+
+
 if (!function_exists('getSuperPayment')) {
     function getSuperPayment()
     {
@@ -135,9 +180,9 @@ if (!function_exists('getSuperPayment')) {
                 "successUrl": "https://commercetools.24livehost.com/super-pay/success",
                 "cancelUrl": "https://commercetools.24livehost.com/super-pay/cancel",
                 "failureUrl": "https://commercetools.24livehost.com/super-pay/fail",
-                "minorUnitAmount": ' . $cart->totalPrice->centAmount . ',
+                "minorUnitAmount": 1,
                 "currency": "GBP",
-                "externalReference": "order_id_' . $cart->id . '"
+                "externalReference": "' . $cart->id . ':' . $ct_suparpay_offer_id . '"
                 }',
             CURLOPT_HTTPHEADER => array(
                 'Content-Type: application/json',

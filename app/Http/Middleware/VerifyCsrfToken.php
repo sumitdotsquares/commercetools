@@ -13,5 +13,13 @@ class VerifyCsrfToken extends Middleware
      */
     protected $except = [
         //
+        '/super-pay/success',
+        '/super-pay/cancel',
+        '/super-pay/fail',
+        '/super-pay/checkout',
+        '/super-pay/refund',
+        '/superpayments/payments',
+        '/webhook',
+        '/customer'
     ];
 }

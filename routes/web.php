@@ -24,6 +24,7 @@ Route::any('/super-pay/cancel', [HomeController::class, 'superpaymentsSuccess'])
 Route::any('/super-pay/fail', [HomeController::class, 'superpaymentsSuccess']);  
 Route::any('/super-pay/checkout', [HomeController::class, 'superpaymentsSuccess']);  
 Route::any('/super-pay/refund', [HomeController::class, 'superpaymentsSuccess']);  
+Route::any('/superpayments/payments', [HomeController::class, 'superpaymentsSuccess']);  
 Route::any('/webhook', [HomeController::class, 'superpaymentsSuccess']);  
 
 Route::any('/reset-session', [HomeController::class, 'resetSession']);  

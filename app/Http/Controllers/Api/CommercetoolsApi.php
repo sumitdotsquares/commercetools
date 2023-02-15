@@ -115,11 +115,6 @@ class CommercetoolsApi extends Controller
         return $this->callCT('carts', 'POST', $body);
     }
 
-    public function superpaymentsSuccess(Request $request)
-    {
-        return json_decode($request);
-    }
-
     public function getOffer()
     {
         return response()->json('Under devlopment');
@@ -148,5 +143,14 @@ class CommercetoolsApi extends Controller
             }
         }
         return json_decode($res->getBody());
+    }
+
+    public function superpaymentsSuccess(Request $request)
+    {
+        die('Hello');
+        $request_body = $request->all();
+        Log::debug('Sumit');
+        Log::debug(json_encode($request_body));
+        return response()->json($request_body);
     }
 }

@@ -40,4 +40,5 @@ Route::any('/super-pay/cancel', [CommercetoolsApi::class, 'superpaymentsSuccess'
 Route::any('/super-pay/fail', [CommercetoolsApi::class, 'superpaymentsSuccess']);  
 Route::any('/super-pay/checkout', [CommercetoolsApi::class, 'superpaymentsSuccess']);  
 Route::any('/super-pay/refund', [CommercetoolsApi::class, 'superpaymentsSuccess']);  
+Route::any('/superpayments/payments', [CommercetoolsApi::class, 'superpaymentsSuccess']);  
 Route::any('/webhook', [CommercetoolsApi::class, 'superpaymentsSuccess']);  
