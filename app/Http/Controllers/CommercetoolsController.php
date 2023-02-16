@@ -108,7 +108,6 @@ class CommercetoolsController extends Controller
             $result = $this->client->sendAsync($request)->wait();
             $cart = json_decode($result->getBody());
             Session::put('ct_cart', json_decode($result->getBody()));
-            Session::save();
         }
         $product = $this->getProductsById($product_id);
         $cart = $this->getCartsById($cart->id);

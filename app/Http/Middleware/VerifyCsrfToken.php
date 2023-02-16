@@ -20,6 +20,5 @@ class VerifyCsrfToken extends Middleware
         '/super-pay/refund',
         '/superpayments/payments',
         '/webhook',
-        '/customer'
     ];
 }
