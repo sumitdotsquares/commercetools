@@ -48,9 +48,11 @@ if (!function_exists('getSuperPayOffer')) {
     {
         $cart = Session::get('ct_cart');
         $cart_items = $cart->lineItems;
+        $minorUnitAmountTotal = 0;
         $items = [];
         for ($i = 0; $i < $cart->totalLineItemQuantity; $i++) {
-            $minorUnitAmount = 1; //(int) $cart_items[$i]->totalPrice->centAmount;
+            $minorUnitAmount = (int) $cart_items[$i]->totalPrice->centAmount;
+            $minorUnitAmountTotal +=  $minorUnitAmount;
             $items[] = [
                 'name' =>  $cart_items[$i]->name->en,
                 'quantity' =>  $cart_items[$i]->quantity,
@@ -60,7 +62,7 @@ if (!function_exists('getSuperPayOffer')) {
         }
 
         $itemData = [
-            'minorUnitAmount' => $minorUnitAmount,
+            'minorUnitAmount' => $minorUnitAmountTotal,
             'cart' => [
                 'id' => $cart->id,
                 'items' =>  $items
@@ -100,6 +102,7 @@ if (!function_exists('getSuperPayOffer')) {
             echo 'Curl error: ' . curl_error($curl);
         } else {
             $response = json_decode($response);
+            Session::put('ct_suparpay_offer', $response);
             Session::put('ct_suparpay_offer_id', $response->cashbackOfferId);
             return $response;
         }
@@ -113,6 +116,8 @@ if (!function_exists('getSuperPayment')) {
     {
         $APP_URL = config('commercetools.APP_URL');
         $cart = Session::get('ct_cart');
+        $session_data = Session::all();
+        $minorUnitAmount = $session_data['ct_suparpay_offer']->calculation->amountAfterSavings;
         $ct_customer =  Session::get('ct_customer');
         $ct_suparpay_offer_id = Session::get('ct_suparpay_offer_id');
         $url = config('commercetools.SUPAR_API_URL') . '/payments';
@@ -135,7 +140,7 @@ if (!function_exists('getSuperPayment')) {
                 "successUrl": "' . $APP_URL . '/superpayments/success",
                 "cancelUrl": "' . $APP_URL . '/superpayments/cancel",
                 "failureUrl": "' . $APP_URL . '/superpayments/fail",
-                "minorUnitAmount": 1,
+                "minorUnitAmount": '.$minorUnitAmount.',
                 "currency": "GBP",
                 "externalReference": "' . $cart->id . '"
                 }',
@@ -159,12 +164,5 @@ if (!function_exists('formatAmount')) {
     function formatAmount($dollars = 0)
     {
         echo '€ ' . sprintf('%0.2f', $dollars);
-    }
-}
-
-
-if (!function_exists('createCommercetoolsOrder')) {
-    function createCommercetoolsOrder($customer, $cart)
-    {
     }
 }

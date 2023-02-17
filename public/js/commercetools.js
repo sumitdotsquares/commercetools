@@ -6,6 +6,10 @@ function checkUser(e) {
     data: {
       email: $("#email").val(),
       password: $("#password").val(),
+      name: $("#name").val(),
+      address: $("#address").val(),
+      city: $("#city").val(),
+      country: $("#country").val(),
     },
     success: function (data) {
       console.log(data);

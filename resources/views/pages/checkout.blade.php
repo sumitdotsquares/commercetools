@@ -39,15 +39,15 @@
          </div>
          <div class="row mb-2">
             <div class="col"><label for="name">Name</label>
-               <input type="text" class="form-control" id="name" value="{{ $ct_customer_name }}">
+               <input type="text" class="form-control" id="name" onchange="checkUser(this);" value="{{ $ct_customer_name }}">
             </div>
             <div class="col"><label for="address">Address</label>
-               <input type="text" class="form-control" id="address" value="{{ $ct_customer_street }}">
+               <input type="text" class="form-control" id="address" onchange="checkUser(this);" value="{{ $ct_customer_street }}">
             </div>
          </div>
          <div class="row mb-3">
             <div class="col"><label for="city">City</label>
-               <input type="text" class="form-control" id="city" value="{{ $ct_customer_city }}">
+               <input type="text" class="form-control" id="city" onchange="checkUser(this);" value="{{ $ct_customer_city }}">
             </div>
             <div class="col">
                <label for="country">country</label>
@@ -55,12 +55,14 @@
             </div>
          </div>
          <div class="row mb-2 checkoutPane">
-            <div class="col-12    mb-2">
+            <!-- <div class="col-12    mb-2">
                <a class="form-control btn btn-primary" href="{{$redirectUrl}}" style="color: white; border: 0px;">Pay with Super Pay € {{$supar_pay_offer->calculation->amountAfterSavings / 100 }} now</a>
 
-            </div>
+            </div> -->
             <div class="col-12">
+            <a href="{{$redirectUrl}}">
                {!! $supar_pay_offer->content->banner !!}
+               </a>
             </div>
          </div>
 
