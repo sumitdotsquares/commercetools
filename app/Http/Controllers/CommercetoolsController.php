@@ -67,14 +67,13 @@ class CommercetoolsController extends Controller
 
     public function getCustomerByEmail(Request $request)
     {
-        // dd($request->all());
         $email = $request->email;
         $password = $request->password;
         $name = $request->name;
         $address = $request->address;
         $city = $request->city;
         $country = $request->country;
-        $request = new \GuzzleHttp\Psr7\Request('POST', url('/api') . '/customer');
+        $request = new \GuzzleHttp\Psr7\Request('POST', url('/api') . '/customer-sign-in');
         $result = $this->client->sendAsync($request, ['form_params' => [
             "email" => $email,
             "password" => $password,
@@ -84,7 +83,7 @@ class CommercetoolsController extends Controller
             "country" => $country,
         ]])->wait();
         $result = json_decode($result->getBody());
-        
+
         Session::put('ct_customer', $result);
         return response()->json($result);
     }
@@ -117,12 +116,14 @@ class CommercetoolsController extends Controller
     public function addToCart($product_id = null)
     {
         $cart = Session::get('ct_cart');
-        if ($cart == null) {
+        if (!isset($cart->version)) {
             $request = new \GuzzleHttp\Psr7\Request('POST', url('/api') . '/carts');
             $result = $this->client->sendAsync($request)->wait();
             $cart = json_decode($result->getBody());
             Session::put('ct_cart', json_decode($result->getBody()));
         }
+
+
         $product = $this->getProductsById($product_id);
         $cart = $this->getCartsById($cart->id);
 
@@ -145,20 +146,60 @@ class CommercetoolsController extends Controller
     }
 
 
+    function preCreateOrder()
+    {
+        $cart = Session::get('ct_cart');
+        $cart = $this->getCartsById($cart->id);
+        $order = Session::get('ct_order');
+        if ($order == null) {
+            $body = [
+                "cart_id" => $cart->id,
+                "version" => $cart->version,
+            ];
+
+            $request = new \GuzzleHttp\Psr7\Request('POST', url('/api') . '/pre-create-order');
+            $result = $this->client->sendAsync($request, ['form_params' => $body])->wait();
+            $order = json_decode($result->getBody());
+            Session::put('ct_order', json_decode($result->getBody()));
+        }
+
+        return $order;
+    }
+
+    public function loginCustomer($email, $password)
+    {
+        $body = [
+            "email" => $email,
+            "password" => $password
+        ];
+
+        $request = new \GuzzleHttp\Psr7\Request('POST', url('/api') . '/customer-sign-in');
+        $result = $this->client->sendAsync($request, ['form_params' => $body])->wait();
+        $result = json_decode($result->getBody());
+
+        if ($result != '400') {
+            Session::put('ct_customer', $result);
+            return redirect()->route('userDashboard');
+        } else {
+            return 'Please provide correct username and password!';
+        }
+    }
 
     public function superpaymentsSuccess()
     {
         $session_data = Session::all();
 
-        if (!$session_data['ct_cart']) {
-            return redirect()->route('shop');
+        if (!isset($session_data['ct_cart'])) {
+            return view('pages.ordersuccess');
         }
+        
         $suparpayment = DB::table('suparpayment')
-            ->where('externalReference', $session_data['ct_cart']->id)
+            ->where('externalReference', $session_data['ct_order']->orderNumber)
             ->first();
 
         $body = [
             "cart_id" => $session_data['ct_cart']->id,
+            "order_id" => $session_data['ct_order']->id,
             "customer_id" => $session_data['ct_customer']->id,
             "eventType" => $suparpayment->eventType,
             "transactionId" => $suparpayment->transactionId,
@@ -171,9 +212,72 @@ class CommercetoolsController extends Controller
             "timestamp" => date(DATE_ATOM, strtotime($suparpayment->c_data)),
         ];
 
+        $insertData = [
+            "cart_id" => $session_data['ct_cart']->id,
+            "order_id" => $session_data['ct_order']->id,
+            "customer_id" => $session_data['ct_customer']->id,
+            "externalReference" => $suparpayment->externalReference,
+            "centAmount" => $session_data['ct_suparpay_offer']->calculation->amountAfterSavings,
+            "timestamp" =>  $body['timestamp']
+        ];
+
+        DB::table('orders')->insert($insertData);
+
         $request = new \GuzzleHttp\Psr7\Request('POST', url('/api') . '/create-order');
         $result = $this->client->sendAsync($request, ['form_params' => $body])->wait();
         $result = json_decode($result->getBody());
+
+        Session::put('ct_order', $result);
+        Session::put('ct_cart', []);
+        Session::put('ct_suparpay_offer', []);
+        Session::put('ct_suparpay_offer_id', []);
+        Session::put('ct_suparpay_payments', []);
+        Session::put('ct_order', []);
+        $output['cart_item_count'] = 0;
+        return view('pages.ordersuccess',  $output);
+    }
+
+    public function superpaymentsRefund()
+    {
+        $session_data = Session::all();
+
+        if (!$session_data['ct_cart']) {
+            return redirect()->route('shop');
+        }
+        $suparpayment = DB::table('suparpayment')
+            ->where('externalReference', $session_data['ct_order']->orderNumber)
+            ->first();
+
+        $body = [
+            "cart_id" => $session_data['ct_cart']->id,
+            "order_id" => $session_data['ct_order']->id,
+            "customer_id" => $session_data['ct_customer']->id,
+            "eventType" => $suparpayment->eventType,
+            "transactionId" => $suparpayment->transactionId,
+            "transactionReference" => $suparpayment->transactionReference,
+            "transactionStatus" => $suparpayment->transactionStatus,
+            "transactionAmount" => $suparpayment->transactionAmount,
+            "externalReference" => $suparpayment->externalReference,
+            "currencyCode" => config('commercetools.currencyCode'),
+            "centAmount" => $session_data['ct_suparpay_offer']->calculation->amountAfterSavings,
+            "timestamp" => date(DATE_ATOM, strtotime($suparpayment->c_data)),
+        ];
+
+        $insertData = [
+            "cart_id" => $session_data['ct_cart']->id,
+            "order_id" => $session_data['ct_order']->id,
+            "customer_id" => $session_data['ct_customer']->id,
+            "externalReference" => $suparpayment->externalReference,
+            "centAmount" => $session_data['ct_suparpay_offer']->calculation->amountAfterSavings,
+            "timestamp" =>  $body['timestamp']
+        ];
+
+        DB::table('orders')->insert($insertData);
+
+        $request = new \GuzzleHttp\Psr7\Request('POST', url('/api') . '/create-order');
+        $result = $this->client->sendAsync($request, ['form_params' => $body])->wait();
+        $result = json_decode($result->getBody());
+
         Session::put('ct_order', $result);
         Session::put('ct_cart', []);
         Session::put('ct_suparpay_offer', []);

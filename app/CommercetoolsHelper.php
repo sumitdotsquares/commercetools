@@ -36,8 +36,10 @@ if (!function_exists('getCartItemCount')) {
     function getCartItemCount()
     {
         $cart = Session::get('ct_cart');
-        if ($cart) {
+        if (isset($cart->totalLineItemQuantity)) {
             return $cart->totalLineItemQuantity;
+        } else {
+            return 0;
         }
     }
 }
@@ -50,7 +52,7 @@ if (!function_exists('getSuperPayOffer')) {
         $cart_items = $cart->lineItems;
         $minorUnitAmountTotal = 0;
         $items = [];
-        for ($i = 0; $i < $cart->totalLineItemQuantity; $i++) {
+        for ($i = 0; $i < count($cart->lineItems); $i++) {
             $minorUnitAmount = (int) $cart_items[$i]->totalPrice->centAmount;
             $minorUnitAmountTotal +=  $minorUnitAmount;
             $items[] = [
@@ -112,12 +114,12 @@ if (!function_exists('getSuperPayOffer')) {
 }
 
 if (!function_exists('getSuperPayment')) {
-    function getSuperPayment()
+    function getSuperPayment($order_id)
     {
         $APP_URL = config('commercetools.APP_URL');
         $cart = Session::get('ct_cart');
         $session_data = Session::all();
-        $minorUnitAmount = $session_data['ct_suparpay_offer']->calculation->amountAfterSavings;
+        $minorUnitAmount = $session_data['ct_cart']->totalPrice->centAmount;
         $ct_customer =  Session::get('ct_customer');
         $ct_suparpay_offer_id = Session::get('ct_suparpay_offer_id');
         $url = config('commercetools.SUPAR_API_URL') . '/payments';
@@ -138,11 +140,11 @@ if (!function_exists('getSuperPayment')) {
             CURLOPT_POSTFIELDS => '{
                 "cashbackOfferId": "' . $ct_suparpay_offer_id . '",
                 "successUrl": "' . $APP_URL . '/superpayments/success",
-                "cancelUrl": "' . $APP_URL . '/superpayments/cancel",
-                "failureUrl": "' . $APP_URL . '/superpayments/fail",
-                "minorUnitAmount": '.$minorUnitAmount.',
+                "cancelUrl": "' . $APP_URL . '/checkout",
+                "failureUrl": "' . $APP_URL . '/checkout",
+                "minorUnitAmount": ' . $minorUnitAmount . ',
                 "currency": "GBP",
-                "externalReference": "' . $cart->id . '"
+                "externalReference": "' . $order_id . '"
                 }',
             CURLOPT_HTTPHEADER => array(
                 'Content-Type: application/json',
@@ -159,10 +161,130 @@ if (!function_exists('getSuperPayment')) {
     }
 }
 
+if (!function_exists('refundSuperPayment')) {
+    function refundSuperPayment($transactionId = null, $minorUnitAmount = null, $orderId = null)
+    {
+        $APP_URL = config('commercetools.APP_URL');
+        $url = config('commercetools.SUPAR_API_URL') . '/refunds';
+        $getApikey = config('commercetools.SUPAR_API_KEY');
+
+        $curl = curl_init();
+
+        curl_setopt_array($curl, array(
+            CURLOPT_URL => $url,
+            CURLOPT_USERAGENT => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36',
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => '',
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 0,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => 'POST',
+            CURLOPT_POSTFIELDS => '{
+                    "currency": "GBP",
+                    "transactionId": "' . $transactionId . '",
+                    "minorUnitAmount": ' . $minorUnitAmount . ',
+                    "externalReference": "'.$orderId.'"
+            }',
+            CURLOPT_HTTPHEADER => array(
+                'Content-Type: application/json',
+                'Referer: ' . $APP_URL,
+                'checkout-api-key: ' . $getApikey
+            ),
+        ));
+
+        $response = curl_exec($curl);
+        curl_close($curl);
+        $response = json_decode($response);
+        return $response;
+    }
+}
+
+
+if (!function_exists('checkRefundSuperPayment')) {
+    function checkRefundSuperPayment($transactionId)
+    {
+        $APP_URL = config('commercetools.APP_URL');
+        $url = config('commercetools.SUPAR_API_URL') . '/refunds/' . $transactionId;
+        $getApikey = config('commercetools.SUPAR_API_KEY');
+
+        $curl = curl_init();
+
+        curl_setopt_array($curl, array(
+            CURLOPT_URL => $url,
+            CURLOPT_USERAGENT => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36',
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => '',
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 0,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => 'GET',
+
+            CURLOPT_HTTPHEADER => array(
+                'Content-Type: application/json',
+                'Referer: ' . $APP_URL,
+                'checkout-api-key: ' . $getApikey
+            ),
+        ));
+
+        $response = curl_exec($curl);
+        curl_close($curl);
+        $response = json_decode($response);
+        return $response;
+    }
+}
+
+
+if (!function_exists('getPaymentSuperPayment')) {
+    function getPaymentSuperPayment()
+    {
+        $APP_URL = config('commercetools.APP_URL');
+        $url = config('commercetools.SUPAR_API_URL') . '/payments/search?pageSize=100';
+        $getApikey = config('commercetools.SUPAR_API_KEY');
+
+        $curl = curl_init();
+
+        curl_setopt_array($curl, array(
+            CURLOPT_URL => $url,
+            CURLOPT_USERAGENT => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36',
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => '',
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 0,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => 'GET',
+
+            CURLOPT_HTTPHEADER => array(
+                'Content-Type: application/json',
+                'Referer: ' . $APP_URL,
+                'checkout-api-key: ' . $getApikey
+            ),
+        ));
+
+        $response = curl_exec($curl);
+        curl_close($curl);
+        $response = json_decode($response);
+        return $response;
+    }
+}
+
 
 if (!function_exists('formatAmount')) {
     function formatAmount($dollars = 0)
     {
-        echo '€ ' . sprintf('%0.2f', $dollars);
+        echo config('commercetools.currencySymbol') . ' ' . sprintf('%0.2f', $dollars);
+    }
+}
+
+if (!function_exists('getCustomer')) {
+    function getCustomer()
+    {
+        if (isset(Session::get('ct_customer')->id)) {
+            return true;
+        } else {
+            return false;
+        }
     }
 }

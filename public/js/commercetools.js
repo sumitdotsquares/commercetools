@@ -1,4 +1,4 @@
-function checkUser(e) {
+function checkUser() {
   $.ajax({
     type: "POST",
     url: "/customer",
@@ -13,16 +13,17 @@ function checkUser(e) {
     },
     success: function (data) {
       console.log(data);
-      if (data != false) {
-        // $("#checkout #customer_id").val(data.id);
-        // $("#checkout #name").val(data.firstName + " " + data.lastName);
-        // $("#checkout #address").val(data.addresses[0].streetName);
-        // $("#checkout #city").val(data.addresses[0].city);
-        // $(
-        //   "#checkout #country option[value='" + data.addresses[0].country + "']"
-        // ).prop("selected", true);
+      if (data != 400) {
+        $("#checkout #customer_id").val(data.id);
+        $("#checkout #name").val(data.firstName + " " + data.lastName);
+        $("#checkout #address").val(data.addresses[0].streetName);
+        $("#checkout #city").val(data.addresses[0].city);
+        $(
+          "#checkout #country option[value='" + data.addresses[0].country + "']"
+        ).prop("selected", true);
         location.reload(true);
       } else {
+        $('.loginFail').show()
         $("#checkout #customer_id").val("");
         $("#checkout #name").val("");
         $("#checkout #address").val("");
@@ -33,26 +34,8 @@ function checkUser(e) {
   });
 }
 
-// function getOffer() {
-//   const SP_BASE_URL = "https://api.staging.superpayments.com/v2";
-//   const SP_API_KEY = "PSK_V6FrAxwm4T8lhnLwiPoM-xNSZnDKTYEUSLNme6v2";
-
-//   var data = '{"cartId":"c372589a-25e9-4543-8a63-e390e9dc88eb","lineItem":[{"name":"Bag “Greyson“ Guess","quantity":1,"minorUnitAmount":14900,"url":"http://commercetools.24livehost.com"}]}';
-
-//   console.log(SP_BASE_URL + "/offers");
-
-//   $.ajax({
-//     type: "POST",
-//     url: SP_BASE_URL + "/offers",
-//     headers: {
-//       "Content-Type": "application/json",
-//       Referer: "https://commercetools.24livehost.com/checkout",
-//       "checkout-api-key": SP_API_KEY,
-//     },
-//     data: data,
-//     success: function (data) {
-//       console.log(data);
-//     },
-//   });
-// }
-// getOffer();
+$(document).ready(function () {
+  $(".loginCustomer").on("click", function () {
+    checkUser();
+  });
+});

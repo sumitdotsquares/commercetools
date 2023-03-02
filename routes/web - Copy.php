@@ -2,7 +2,6 @@
 
 use App\Http\Controllers\CommercetoolsController;
 use App\Http\Controllers\HomeController;
-use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -23,7 +22,6 @@ Route::get('/checkout', [HomeController::class, 'checkout'])->name('checkout');
 Route::get('/process-checkout', [HomeController::class, 'processCheckout'])->name('processCheckout');   
 Route::post('/customer', [CommercetoolsController::class, 'getCustomerByEmail'])->name('getCustomerByEmail');  
 Route::any('/superpayments/success', [CommercetoolsController::class, 'superpaymentsSuccess']);  
-Route::any('/superpayments/refunds', [CommercetoolsController::class, 'superpaymentsSuccess']);  
 Route::any('/superpayments/cancel', [CommercetoolsController::class, 'superpaymentsSuccess']);  
 Route::any('/superpayments/fail', [CommercetoolsController::class, 'superpaymentsSuccess']);  
 Route::any('/superpayments/payments', [HomeController::class, 'webhook']);  
@@ -33,6 +31,4 @@ Route::any('/reset-session', [HomeController::class, 'resetSession']);
 Route::get('/user-dashboard', [HomeController::class, 'userDashboard'])->name('userDashboard');  
 Route::any('/login', [HomeController::class, 'login'])->name('login');    
 Route::any('/logout', [HomeController::class, 'logout'])->name('logout');    
-Route::any('/order/{id}', [UserController::class, 'orderById'])->name('orderById');    
-Route::any('/refund/{id}/{id2}', [UserController::class, 'refundById'])->name('refundById');    
-Route::any('/get-refund/{id}', [UserController::class, 'checkRefundSuperPayment'])->name('checkRefundSuperPayment');    
+

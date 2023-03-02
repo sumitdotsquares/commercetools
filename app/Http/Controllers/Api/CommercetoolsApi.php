@@ -41,46 +41,42 @@ class CommercetoolsApi extends Controller
 
         foreach ($customers->results as $customer) {
             if ($customer->email == $request->email) {
-                return $customer;
+                $temp_customer =  $customer;
             }
         }
 
-        $body = '{
-            "email" : "' . $email . '",
-            "firstName" : "' . $name . '",
-            "lastName" : "",
-            "password" : "' . $password . '",
-          }';
-        return $request->all();
-        return $customer = $this->callCT('customers', "POST", $body);
+        if (isset($temp_customer)) {
+            return $temp_customer;
+        } else {
+            $body = '{ "email" : "' . $email . '", "firstName" : "' . $name . '", "lastName" : "", "password" : "' . $password . '" }';
+            $customer = $this->callCT('customers', "POST", $body)->customer;
 
-        $body = '{
-            "version": ' . $customer->version . ',
-            "actions": [
-                {
-                    "action" : "addAddress",
-                    "address" : {
-                      "key" : "' . uniqid() . '",
-                      "title" : "My Address",
-                      "salutation" : "Mr.",
-                      "firstName" : "' . $name . '",
-                      "lastName" : "",
-                      "streetName" : "' . $address . '",
-                      "streetNumber" : "",
-                      "additionalStreetInfo" : "",
-                      "postalCode" : "",
-                      "city" : "' . $city . '",
-                      "region" : "",
-                      "state" : "",
-                      "country" : "' . $country . '",
-                    }
-                  }
-            ]
-        }';
+            $body = [
+                "version" => $customer->version,
+                "actions" => [
+                    [
+                        "action" => "addAddress",
+                        "address" => [
+                            "key" => uniqid(),
+                            "title" => "My Address",
+                            "salutation" => "",
+                            "firstName" => $name,
+                            "lastName" => "",
+                            "streetName" => $address,
+                            "streetNumber" => "",
+                            "additionalStreetInfo" => "",
+                            "postalCode" => "",
+                            "city" => $city,
+                            "region" => "",
+                            "state" => "",
+                            "country" => $country,
+                        ]
+                    ]
+                ]
+            ];
 
-        return $this->callCT('customers/' . $customer->id, "POST", $body);
-
-        return response()->json(false);
+            return $this->callCT('customers/' . $customer->id, "POST", json_encode($body));
+        }
     }
 
     public function getTest()
@@ -106,6 +102,11 @@ class CommercetoolsApi extends Controller
     public function getCartsById($cart_id = null)
     {
         return $this->callCT('carts/' . $cart_id);
+    }
+
+    public function getOrdersById($order_id = null)
+    {
+        return $this->callCT('orders/' . $order_id);
     }
 
     public function itemAddToCart(Request $request)
@@ -155,7 +156,44 @@ class CommercetoolsApi extends Controller
             "shipping": [],
             "customShipping": []
           }';
-        return $this->callCT('carts', 'POST', $body);
+        $cart = $this->callCT('carts', 'POST', $body);
+
+        return $this->updateShippingAddressCart($cart->id);
+    }
+
+    public function customerSignIn(Request $request)
+    {
+        $data = $request->all();
+
+        $body = '{
+            "email" : "' . $data['email'] . '",
+            "password" : "' . $data['password'] . '"
+          }';
+
+        $customer = $this->callCT('login', 'POST', $body);
+
+        if (isset($customer->statusCode)) {
+            return '400';
+        } else {
+            return $customer->customer;
+        }
+
+        return $customer->statusCode;
+    }
+
+
+    public function customerOrders()
+    {
+
+        return $orders = $this->callCT('me/orders');
+
+        if (isset($orders->statusCode)) {
+            return '400';
+        } else {
+            return $orders->orders;
+        }
+
+        return $orders->statusCode;
     }
 
     public function getOffer()
@@ -163,11 +201,11 @@ class CommercetoolsApi extends Controller
         return response()->json('Under devlopment');
     }
 
-    public function updateCartWithCustomerId($cart_id, $customer_id)
+    public function updateOrderWithCustomerId($order_id, $customer_id)
     {
-        $cart = $this->getCartsById($cart_id);
+        $order = $this->getOrdersById($order_id);
         $body = '{
-            "version": ' . $cart->version . ',
+            "version": ' . $order->version . ',
             "actions": [
                 {
                     "action" : "setCustomerId",
@@ -175,10 +213,51 @@ class CommercetoolsApi extends Controller
                 }
             ]
         }';
-        return $this->callCT('carts/' . $cart_id, 'POST',  $body);
+        return $this->callCT('orders/' . $order_id, 'POST',  $body);
     }
 
-    public function updateShippingAddress($cart_id, $shippingAddress = [])
+    public function updateShippingAddress($order_id, $shippingAddress = [])
+    {
+        $order = $this->getOrdersById($order_id);
+        $body = '{
+            "version": ' . $order->version . ',
+            "actions": [
+                {
+                    "action" : "setShippingAddress",
+                    "address" : {
+                      "key" : "exampleKey",
+                      "title" : "My Address",
+                      "salutation" : "Mr.",
+                      "firstName" : "Example 1",
+                      "lastName" : "Person",
+                      "streetName" : "Example Street",
+                      "streetNumber" : "4711",
+                      "additionalStreetInfo" : "Backhouse",
+                      "postalCode" : "80933",
+                      "city" : "Exemplary City",
+                      "region" : "Exemplary Region",
+                      "state" : "Exemplary State",
+                      "country" : "DE",
+                      "company" : "My Company Name",
+                      "department" : "Sales",
+                      "building" : "Hightower 1",
+                      "apartment" : "247",
+                      "pOBox" : "2471",
+                      "phone" : "+49 89 12345678",
+                      "mobile" : "+49 171 2345678",
+                      "email" : "email@example.com",
+                      "fax" : "+49 89 12345679",
+                      "additionalAddressInfo" : "no additional Info",
+                      "externalId" : "Information not needed"
+                    }
+                  }
+            ]
+        }';
+
+        return $this->callCT('orders/' . $order_id, 'POST',  $body);
+    }
+
+    public function updateShippingAddressCart($cart_id, $shippingAddress = [])
     {
         $cart = $this->getCartsById($cart_id);
         $body = '{
@@ -190,7 +269,7 @@ class CommercetoolsApi extends Controller
                       "key" : "exampleKey",
                       "title" : "My Address",
                       "salutation" : "Mr.",
-                      "firstName" : "Example",
+                      "firstName" : "Example 1",
                       "lastName" : "Person",
                       "streetName" : "Example Street",
                       "streetNumber" : "4711",
@@ -219,12 +298,35 @@ class CommercetoolsApi extends Controller
         return $this->callCT('carts/' . $cart_id, 'POST',  $body);
     }
 
-    public function createPayment($cart_id, $currencyCode, $centAmount, $timestamp)
+    public function getPaymentById($payment_id)
+    {
+        return $this->callCT('payments/' . $payment_id);
+    }
+
+    public function updateCustomerInPayment($payment_id, $customer_id)
+    {
+        $payment = $this->getPaymentById($payment_id);
+        $body = '{
+            "version": ' . $payment->version . ',
+            "actions": [
+                {
+                    "action" : "setCustomer",
+                    "customer" : {
+                      "typeId" : "customer",
+                      "id" : "' . $customer_id . '"
+                    }
+                  }
+            ]
+        }';
+        return $this->callCT('payments/' . $payment_id, 'POST',  $body);
+    }
+
+    public function createPayment($order_id, $currencyCode, $centAmount, $timestamp)
     {
         $payments = $this->callCT('payments', 'GET');
         foreach ($payments->results as $key => $value) {
             if (isset($value->interfaceId)) {
-                if ($value->interfaceId == $cart_id) {
+                if ($value->interfaceId == $order_id) {
                     return $this->callCT('payments/' . $value->id, 'GET');
                 }
             }
@@ -232,16 +334,16 @@ class CommercetoolsApi extends Controller
 
         $body = '{
             "key" : "' . time() . '",
-            "interfaceId" : "' . $cart_id . '",
+            "interfaceId" : "' . $order_id . '",
             "amountPlanned" : {
               "currencyCode" : "' . $currencyCode . '",
               "centAmount" : ' . $centAmount . '
             },
             "paymentMethodInfo" : {
-              "paymentInterface" : "SUPARPAYMENT",
-              "method" : "ONLINE",
+              "paymentInterface" : "Super Payments",
+              "method" : "Online",
               "name" : {
-                "en" : "Net Banking"
+                "en" : "Open Banking"
               }
             },
             "transactions" : [ {
@@ -257,11 +359,11 @@ class CommercetoolsApi extends Controller
         return $this->callCT('payments', 'POST',  $body);
     }
 
-    public function addPaymentToCart($cart_id, $payment_id)
+    public function addPaymentToOrder($order_id, $payment_id)
     {
-        $cart = $this->getCartsById($cart_id);
+        $order = $this->getOrdersById($order_id);
         $body = '{
-            "version": ' . $cart->version . ',
+            "version": ' . $order->version . ',
             "actions": [
                 {
                     "action" : "addPayment",
@@ -272,38 +374,62 @@ class CommercetoolsApi extends Controller
                   }
             ]
         }';
-        return $this->callCT('carts/' . $cart_id, 'POST',  $body);
+        return $this->callCT('orders/' . $order_id, 'POST',  $body);
+    }
+
+    public function changePaymentState($order_id)
+    {
+        $order = $this->getOrdersById($order_id);
+        $body = '{
+            "version": ' . $order->version . ',
+            "actions": [
+                {
+                    "action" : "changePaymentState",
+                    "paymentState" : "Paid"
+                  }
+            ]
+        }';
+        return $this->callCT('orders/' . $order_id, 'POST',  $body);
     }
 
     public function createOrder(Request $request)
     {
         $data = $request->all();
+
         $currencyCode = $data['currencyCode'];
         $centAmount = $data['centAmount'];
         $timestamp = $data['timestamp'];
 
         $cart_id = $data['cart_id'];
+        $order_id = $data['order_id'];
         $customer_id = $data['customer_id'];
-        $cart = $this->getCartsById($cart_id);
+        $order = $this->getOrdersById($order_id);
 
-        if (!isset($cart->shippingAddress)) {
-            $this->updateCartWithCustomerId($cart_id, $customer_id);
-            $cart = $this->updateShippingAddress($cart_id);
+        $this->updateOrderWithCustomerId($order_id, $customer_id);
+        $order = $this->updateShippingAddress($order_id);
+
+        if (!isset($order->paymentInfo)) {
+            $payment = $this->createPayment($order_id, $currencyCode, $centAmount, $timestamp);
+            $this->updateCustomerInPayment($payment->id, $customer_id);
+            $this->changePaymentState($order_id);
+            return $this->addPaymentToOrder($order_id, $payment->id);
         }
 
-        if (!isset($cart->paymentInfo)) {
-            $payment = $this->createPayment($cart_id, $currencyCode, $centAmount, $timestamp);
-            $cart = $this->addPaymentToCart($cart_id, $payment->id);
-        }
 
-        $body = '{
-            "id" : "' . $cart->id . '",
-            "version" : ' . $cart->version . ',
-            "orderNumber" : "' . time() . '"
-          }';
+        // return $this->callCT('orders', 'POST',  $body);
+    }
+
+
+    public function preCreateOrder(Request $request)
+    {
+
+        $cart_id = $request->cart_id;
+        $cart_version = $request->version;
+        $body = '{"id" : "' . $cart_id . '","version" : ' . $cart_version . ',"orderNumber" : "' . time() . '"}';
 
         return $this->callCT('orders', 'POST',  $body);
     }
+
 
     public function callCT($uri = null, $method = 'GET', $body = null)
     {
@@ -328,5 +454,46 @@ class CommercetoolsApi extends Controller
             }
         }
         return json_decode($res->getBody());
+    }
+
+
+    public function cancelOrder($orderId = null, $paymentId = null)
+    {
+        $order = $this->getOrdersById($orderId);
+        $body = [
+            "version" => $order->version,
+            "actions" => [
+                [
+                    "action" => "changeOrderState",
+                    "orderState" => "Cancelled"
+                ]
+            ]
+        ];
+        $order =  $this->callCT('orders/' . $orderId, "POST", json_encode($body));
+
+        // $body = [
+        //     "version" => $order->version,
+        //     "actions" => [
+        //         [
+        //             "action" => "removePayment",
+        //             "payment" => [
+        //                 "typeId" => "payment",
+        //                 "id" => $paymentId
+        //             ]
+        //         ]
+        //     ]
+        // ];
+        // $order =  $this->callCT('orders/' . $orderId, "POST", json_encode($body));
+
+        $body = [
+            "version" => $order->version,
+            "actions" => [
+                [
+                    "action" => "changePaymentState",
+                    "paymentState" => "Pending"
+                ]
+            ]
+        ];
+        return $this->callCT('orders/' . $orderId, "POST", json_encode($body));
     }
 }

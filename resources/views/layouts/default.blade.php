@@ -15,7 +15,7 @@
         @yield('content')
         
 
-        <div class="row" style="margin-top: 30px;">
+        <div class="row" style="margin-top: 30px;margin-bottom: 30px;">
             @include('includes.footer')
         </div>
     </div>
